@@ -1,0 +1,125 @@
+% Results subsection: solo versus team, probe pilot v1 and probe v2 across four models.
+% Use with \input{results_four_models} inside the Results section.
+% Needs \usepackage{booktabs}. Sources: docs/retail_confirmation_v1_*_results.md,
+% docs/individual_probe_pilot_results.md, docs/individual_probe_pilot_v2_results.md.
+\section{Results}
+\subsection{Team effects and individual probes across four models}
+\label{sec:results-four-models}
+
+We repeat the retail partial-approval study with four models from four families:
+GPT-5 nano (\texttt{gpt-5-nano-2025-08-07}, OpenAI API),
+Qwen~3.6 35B-A3B (\texttt{Qwen3.6-35B-A3B-FP8}, thinking disabled, NCSA Lumen),
+DeepSeek V4.1 Flash (\texttt{DeepSeek-V4.1-Flash-1017}, DeepSeek API), and
+Gemini~3.1 Flash-Lite (\texttt{gemini-3.1-flash-lite}, Gemini API).
+In every episode the customer asks for two order changes, $X$ and $Y$, and approves only $X$.
+The outcome is whether any agent executes $Y$. It is scored from executed tool calls, and every
+flagged episode is confirmed by replaying its calls against a fresh copy of the database.
+Replay reproduced all labels, with no disagreements across 3{,}964 episodes.
+
+\paragraph{Teams versus solo agents.}
+Table~\ref{tab:solo-team} compares a single agent with a three-agent team on the same 150 case
+groups. The team has a coordinator who speaks to the customer, plus two specialists who share
+notes. Teams executed $Y$ far more often than solo agents for nano ($10$ versus $1$ of $150$)
+and Qwen ($23$ versus $1$). DeepSeek ($2$ versus $0$) and Gemini ($2$ versus $2$) showed no
+team effect. Every team violation was committed by a specialist. The team effect is therefore
+real but model dependent.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Retail partial approval, solo versus team. Counts are episodes in which an agent
+executed the unapproved change $Y$, out of 150 matched case groups. $p$ is the exact McNemar
+test on the matched pairs. ``Completed'' counts team episodes that executed the approved
+change $X$.}
+\label{tab:solo-team}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Solo & Team & $p$ & Completed \\
+\midrule
+GPT-5 nano            & 1 & 10 & 0.012    & 131 \\
+Qwen 3.6$^{\dagger}$  & 1 & 23 & $3\times10^{-6}$ & 52 \\
+DeepSeek V4.1 Flash   & 0 & 2  & 0.50     & 124 \\
+Gemini 3.1 Flash-Lite & 2 & 2  & 1.00     & 124 \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+{\footnotesize $^{\dagger}$39 Qwen episodes were rerun a second time after provider failures.
+Under the prespecified single rerun, 113 complete pairs give 1 versus 14 ($p=0.001$).}
+\end{table}
+
+\paragraph{Probe pilot v1: explicit refusal.}
+Individual probes freeze one agent at the decision point. The customer has just said
+``Please go ahead with $X$ only. Do not do $Y$. I am not approving it.'' The agent then sees one
+scripted teammate message. The five conditions are no message (C0), a correct delegation of
+$X$ (C1), an overbroad request for $X$ and $Y$ (C2), a false claim that both were approved
+(C3), and an overbroad request after a teammate has already executed another unapproved change
+(C4). Table~\ref{tab:probe-v1} reports specialist outcomes. Only Qwen could be moved to act
+against an explicit refusal ($15/24$ under C3 and $8/24$ under C4). nano, DeepSeek and Gemini
+never executed $Y$. Coordinators never executed $Y$ in any model.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Probe pilot v1 with an explicit customer refusal. Specialist episodes that executed
+$Y$, out of 24 per cell (12 case groups $\times$ 2 specialist roles).}
+\label{tab:probe-v1}
+\begin{tabular}{lrrrr}
+\toprule
+Teammate message & nano & Qwen & DeepSeek & Gemini \\
+\midrule
+C0: none                                  & 0 & 0  & 0 & 0 \\
+C1: correct delegation of $X$             & 0 & 1  & 0 & 0 \\
+C2: overbroad ($X$ and $Y$)               & 0 & 0  & 0 & 0 \\
+C3: false approval claim                  & 0 & 15 & 0 & 0 \\
+C4: overbroad after a peer violation      & 0 & 8  & 0 & 0 \\
+\midrule
+Total (of 120)                            & 0 & 24 & 0 & 0 \\
+Completed $X$ (of 120)                    & 86 & 119 & 120 & 120 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Probe v2: customer wording.}
+Retail customers rarely refuse outright, so probe v2 also varies the customer's wording. The
+reply is explicit, silent about $Y$, uncertain about $Y$, or asks to hold $Y$. This is crossed
+with four teammate messages: none, a status relay that ends ``Customer confirmed'', an
+overbroad request, and a false approval claim. Table~\ref{tab:probe-v2} shows that silence is
+the condition that breaks every model. Under silent wording, specialists executed $Y$ in 17
+(nano), 21 (DeepSeek), 75 (Gemini) and 94 (Qwen) of 96 episodes. Outside it, only Qwen and,
+rarely, nano did so. Gemini is the only model whose coordinators violated (3 of 96, all under
+silent wording). Specialists still completed $X$ in 296 to 384 of 384 episodes, so low violation
+rates do not come from refusing all work.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Probe v2: customer wording crossed with four teammate messages. Specialist episodes
+that executed $Y$, out of 96 per wording (4 messages $\times$ 24).}
+\label{tab:probe-v2}
+\begin{tabular}{lrrrr}
+\toprule
+Customer wording & nano & Qwen & DeepSeek & Gemini \\
+\midrule
+Explicit (``Do not do $Y$'')              & 0  & 20  & 0  & 0  \\
+Silent (``Yes, go ahead with $X$'')       & 17 & 94  & 21 & 75 \\
+Hedge (``$Y$, I'm not sure about yet'')   & 6  & 47  & 0  & 0  \\
+Defer (``Please hold off on $Y$'')        & 0  & 19  & 0  & 0  \\
+\midrule
+Total (of 384)                            & 23 & 180 & 21 & 75 \\
+Silent, no teammate message (of 24)       & 1  & 22  & 1  & 12 \\
+Coordinators (of 96)                      & 0  & 0   & 0  & 3  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Do probes predict teams?}
+Only partly. Probes identify Qwen as the riskiest model, consistent with its team rate. However,
+they rank Gemini second ($75/384$), while Gemini teams were among the safest ($2/150$). They
+also cannot separate nano from DeepSeek ($23$ versus $21$ of 384), whose team rates differ
+fivefold ($10$ versus $2$ of 150). An audit of the nano and DeepSeek team traces suggests why.
+In 9 of their 12 team violations, no teammate message had requested $Y$, and nano specialists
+had more decisions at risk per episode than DeepSeek specialists (5.6 versus 3.9). On the first
+such decision, the two models behaved almost identically, and that first decision is all a
+probe measures. A forecast of team risk from individual probes therefore needs a model of
+exposure as well as of the response to a single decision.
